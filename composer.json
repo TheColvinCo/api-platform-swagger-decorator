@@ -1,0 +1,31 @@
+{
+  "name": "colvin/api-platform-swagger-decorator",
+  "type": "library",
+  "description": "Swagger decorator for API Platform",
+  "keywords": [
+    "apiplatform",
+    "swagger",
+    "jwt",
+    "token"
+  ],
+  "homepage": "https://github.com/TheColvinCo/api-platform-swagger-decorator",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Andrea De Pirro",
+      "email": "andrea.depirro@thecolvinco.com",
+      "homepage": "https://www.thecolvinco.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4.0",
+    "symfony/serializer": "^5.0",
+    "symfony/http-foundation": "^5.0"
+  },
+  "autoload": {
+    "psr-0": {
+      "Colvin": ""
+    }
+  },
+  "target-dir": "Colvin"
+}
