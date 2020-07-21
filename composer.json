@@ -1,7 +1,7 @@
 {
   "name": "colvin/api-platform-swagger-decorator",
   "type": "library",
-  "description": "Swagger decorator for API Platform",
+  "description": "Swagger decorator for API Platform, adding JWT endpoints",
   "keywords": [
     "apiplatform",
     "swagger",
@@ -23,9 +23,8 @@
     "symfony/http-foundation": "^5.0"
   },
   "autoload": {
-    "psr-0": {
-      "Colvin": ""
+    "autoload": {
+      "psr-4": {"Colvin\\": "src/"}
     }
-  },
-  "target-dir": "Colvin"
+  }
 }
