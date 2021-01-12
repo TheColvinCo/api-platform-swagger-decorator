@@ -7,6 +7,7 @@ namespace Colvin\Swagger;
 use ApiPlatform\Core\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\Core\OpenApi\OpenApi;
 use ApiPlatform\Core\OpenApi\Model;
+use ArrayObject;
 
 final class Decorator implements OpenApiFactoryInterface
 {
