@@ -9,8 +9,7 @@ Define the service in `services.yaml`:
 ```
 services:
     Colvin\Swagger\Decorator:
-        decorates: 'api_platform.swagger.normalizer.documentation'
-        arguments: ['@Colvin\Swagger\Decorator.inner']
+        decorates: 'api_platform.openapi.factory'
         autoconfigure: false
 ```
 
