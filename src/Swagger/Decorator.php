@@ -4,126 +4,117 @@ declare(strict_types=1);
 
 namespace Colvin\Swagger;
 
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use ApiPlatform\Core\OpenApi\Factory\OpenApiFactoryInterface;
+use ApiPlatform\Core\OpenApi\OpenApi;
+use ApiPlatform\Core\OpenApi\Model;
 
-final class Decorator implements NormalizerInterface
+final class Decorator implements OpenApiFactoryInterface
 {
-    private NormalizerInterface $decorated;
+    public function __construct(
+        private OpenApiFactoryInterface $decorated
+    ) {}
 
-    public function __construct(NormalizerInterface $decorated)
+    public function __invoke(array $context = []): OpenApi
     {
-        $this->decorated = $decorated;
-    }
+        $openApi = ($this->decorated)($context);
+        $schemas = $openApi->getComponents()->getSchemas();
 
-    public function supportsNormalization($data, string $format = null): bool
-    {
-        return $this->decorated->supportsNormalization($data, $format);
-    }
+        $schemas['Token'] = new ArrayObject([
+                                                'type' => 'object',
+                                                'properties' => [
+                                                    'token' => [
+                                                        'type' => 'string',
+                                                        'readOnly' => true,
+                                                    ],
+                                                ],
+                                            ]);
+        $schemas['Credentials'] = new ArrayObject([
+                                                      'type' => 'object',
+                                                      'properties' => [
+                                                          'email' => [
+                                                              'type' => 'string',
+                                                              'example' => 'johndoe@example.com',
+                                                          ],
+                                                          'password' => [
+                                                              'type' => 'string',
+                                                              'example' => 'apassword',
+                                                          ],
+                                                      ],
+                                                  ]);
 
-    public function normalize($object, string $format = null, array $context = [])
-    {
-        $docs = $this->decorated->normalize($object, $format, $context);
+        $jwtPath = new Model\PathItem(
+            ref: 'JWT Token',
+            post: new Model\Operation(
+                     operationId: 'postCredentialsItem',
+                     responses: [
+                                      '200' => [
+                                          'description' => 'Get JWT token',
+                                          'content' => [
+                                              'application/json' => [
+                                                  'schema' => [
+                                                      '$ref' => '#/components/schemas/Token',
+                                                  ],
+                                              ],
+                                          ],
+                                      ],
+                                  ],
+                     summary: 'Get JWT token to login.',
+                     requestBody: new Model\RequestBody(
+                                      description: 'Generate new JWT Token',
+                                      content: new ArrayObject([
+                                                                   'application/json' => [
+                                                                       'schema' => [
+                                                                           '$ref' => '#/components/schemas/Credentials',
+                                                                       ],
+                                                                   ],
+                                                               ]),
+                                  ),
+                 ),
+        );
+        $openApi->getPaths()->addPath('/authentication_token', $jwtPath);
 
-        $docs['components']['schemas']['Token'] = [
-            'type' => 'object',
-            'properties' => [
-                'token' => [
-                    'type' => 'string',
-                    'readOnly' => true,
-                ],
-                'refresh_token' => [
-                    'type' => 'string',
-                    'readOnly' => true,
-                ],
-            ],
-        ];
+        $schemas['RefreshToken'] = new ArrayObject([
+                                                      'type' => 'object',
+                                                      'properties' => [
+                                                          'refresh_token' => [
+                                                              'type' => 'string',
+                                                              'example' => 'xxxx4b54b0076d2fcc5a51a6e60c0fb83b0bc90b47e2c886accb70850795fb311973c9d101fa0111f12eec739db063ec09d7dd79331e3148f5fc6e9cb362xxxx',
+                                                          ],
+                                                      ],
+                                                  ]);
 
-        $docs['components']['schemas']['Credentials'] = [
-            'type' => 'object',
-            'properties' => [
-                'username' => [
-                    'type' => 'string',
-                    'example' => 'api',
-                ],
-                'password' => [
-                    'type' => 'string',
-                    'example' => 'api',
-                ],
-            ],
-        ];
+        $refreshTokenPath = new Model\PathItem(
+            ref: 'Refresh Token',
+            post: new Model\Operation(
+                     operationId: 'postRefreshTokenItem',
+                     responses: [
+                                      '200' => [
+                                          'description' => 'Refresh the token',
+                                          'content' => [
+                                              'application/json' => [
+                                                  'schema' => [
+                                                      '$ref' => '#/components/schemas/Token',
+                                                  ],
+                                              ],
+                                          ],
+                                      ],
+                                  ],
+                     summary: 'Refresh the token.',
+                     requestBody: new Model\RequestBody(
+                                      description: 'Generate new JWT Token',
+                                      content: new ArrayObject([
+                                                                   'application/json' => [
+                                                                       'schema' => [
+                                                                           '$ref' => '#/components/schemas/Credentials',
+                                                                       ],
+                                                                   ],
+                                                               ]),
+                                  ),
+                 ),
+        );
 
-        $docs['components']['schemas']['RefreshToken'] = [
-            'type' => 'object',
-            'properties' => [
-                'refresh_token' => [
-                    'type' => 'string',
-                ],
-            ],
-        ];
-        $tokenDocumentation = [
-            'paths' => [
-                '/authentication_token' => [
-                    'post' => [
-                        'tags' => ['Token'],
-                        'operationId' => 'postCredentialsItem',
-                        'summary' => 'Get JWT token to login.',
-                        'requestBody' => [
-                            'description' => 'Create new JWT Token',
-                            'content' => [
-                                'application/json' => [
-                                    'schema' => [
-                                        '$ref' => '#/components/schemas/Credentials',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        'responses' => [
-                            Response::HTTP_OK => [
-                                'description' => 'Get JWT token',
-                                'content' => [
-                                    'application/json' => [
-                                        'schema' => [
-                                            '$ref' => '#/components/schemas/Token',
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-                '/refresh_token' => [
-                    'post' => [
-                        'tags' => ['Token'],
-                        'operationId' => 'postRefreshToken',
-                        'summary' => 'Refresh JWT token.',
-                        'requestBody' => [
-                            'description' => 'Refresh JWT Token',
-                            'content' => [
-                                'application/json' => [
-                                    'schema' => [
-                                        '$ref' => '#/components/schemas/RefreshToken',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        'responses' => [
-                            Response::HTTP_OK => [
-                                'description' => 'Refresh JWT Token',
-                                'content' => [
-                                    'application/json' => [
-                                        'schema' => [
-                                            '$ref' => '#/components/schemas/Token',
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        $openApi->getPaths()->addPath('/refresh_token', $refreshTokenPath);
 
-        return array_merge_recursive($docs, $tokenDocumentation);
+        return $openApi;
     }
 }
