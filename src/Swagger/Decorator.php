@@ -27,12 +27,16 @@ final class Decorator implements OpenApiFactoryInterface
                                                         'type' => 'string',
                                                         'readOnly' => true,
                                                     ],
+                                                    'refresh_token' => [
+                                                        'type' => 'string',
+                                                        'readOnly' => true,
+                                                    ],
                                                 ],
                                             ]);
         $schemas['Credentials'] = new ArrayObject([
                                                       'type' => 'object',
                                                       'properties' => [
-                                                          'email' => [
+                                                          'username' => [
                                                               'type' => 'string',
                                                               'example' => 'johndoe@example.com',
                                                           ],
@@ -75,14 +79,14 @@ final class Decorator implements OpenApiFactoryInterface
         $openApi->getPaths()->addPath('/authentication_token', $jwtPath);
 
         $schemas['RefreshToken'] = new ArrayObject([
-                                                      'type' => 'object',
-                                                      'properties' => [
-                                                          'refresh_token' => [
-                                                              'type' => 'string',
-                                                              'example' => 'xxxx4b54b0076d2fcc5a51a6e60c0fb83b0bc90b47e2c886accb70850795fb311973c9d101fa0111f12eec739db063ec09d7dd79331e3148f5fc6e9cb362xxxx',
-                                                          ],
-                                                      ],
-                                                  ]);
+                                                       'type' => 'object',
+                                                       'properties' => [
+                                                           'refresh_token' => [
+                                                               'type' => 'string',
+                                                               'example' => 'xxxx4b54b0076d2fcc5a51a6e60c0fb83b0bc90b47e2c886accb70850795fb311973c9d101fa0111f12eec739db063ec09d7dd79331e3148f5fc6e9cb362xxxx',
+                                                           ],
+                                                       ],
+                                                   ]);
 
         $refreshTokenPath = new Model\PathItem(
             ref: 'Refresh Token',
@@ -106,7 +110,7 @@ final class Decorator implements OpenApiFactoryInterface
                                       content: new ArrayObject([
                                                                    'application/json' => [
                                                                        'schema' => [
-                                                                           '$ref' => '#/components/schemas/Credentials',
+                                                                           '$ref' => '#/components/schemas/RefreshToken',
                                                                        ],
                                                                    ],
                                                                ]),
